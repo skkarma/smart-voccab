@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Vocabulary App — Cloud Sync</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen py-6 px-4">
+  <div class="max-w-xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="text-center space-y-2">
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">
+          Step 7 • Supabase Cloud Sync
+        </span>
+        <button
+          id="cloudToggleBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+        >
+          <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span id="cloudStatusText">Local Mode • Setup Cloud</span>
+        </button>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">My Vocabulary Book</h1>
+      <p class="text-sm text-slate-500">Add words automatically, sync across devices with Supabase, listen, quiz, and export.</p>
+    </header>
+
+    <!-- Collapsible Supabase Cloud Sync Settings -->
+    <section id="cloudPanel" class="hidden bg-white rounded-2xl shadow-sm border border-indigo-200 p-5 sm:p-6 space-y-4">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">Connect Supabase Database</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Paste your Project URL and Anon Key to sync words across all your phones and laptops.</p>
+        </div>
+        <button
+          id="closeCloudBtn"
+          type="button"
+          class="text-xs font-medium text-slate-400 hover:text-slate-700 px-2 py-1 rounded-lg cursor-pointer"
+        >
+          Close
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label for="sbUrlInput" class="block text-xs font-medium text-slate-700 mb-1">Supabase Project URL</label>
+          <input
+            id="sbUrlInput"
+            type="url"
+            placeholder="https://your-project.supabase.co"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        <div>
+          <label for="sbKeyInput" class="block text-xs font-medium text-slate-700 mb-1">Supabase Anon / Publishable Key</label>
+          <input
+            id="sbKeyInput"
+            type="password"
+            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+      </div>
+
+      <p id="cloudMsg" class="hidden text-xs font-medium rounded-lg px-3 py-2 border"></p>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          id="connectCloudBtn"
+          type="button"
+          class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+        >
+          Connect &amp; Sync Now
+        </button>
+        <button
+          id="disconnectCloudBtn"
+          type="button"
+          class="hidden text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer"
+        >
+          Disconnect
+        </button>
+      </div>
+    </section>
+
+    <!-- Part 1: Auto-Fetch & Add New Word Form -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+      <h2 class="text-base font-semibold text-slate-900 mb-4">Add a New Word</h2>
+      <form id="vocabForm" class="space-y-4" novalidate>
+        <div>
+          <label for="wordInput" class="block text-sm font-medium text-slate-700 mb-1">Vocabulary Word</label>
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <input
+              id="wordInput"
+              type="text"
+              placeholder="e.g., Resilient, Ephemeral, Candid"
+              class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <button
+              id="submitBtn"
+              type="submit"
+              class="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 disabled:cursor-wait text-white font-semibold text-sm py-2.5 px-5 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
+            >
+              Find &amp; Save
+            </button>
+          </div>
+        </div>
+
+        <!-- Optional Fallback Manual Fields -->
+        <div id="manualFields" class="hidden space-y-3 pt-2 border-t border-slate-100">
+          <p class="text-xs text-slate-500">Enter details manually below if the word wasn't found online:</p>
+          <div>
+            <label for="meaningInput" class="block text-sm font-medium text-slate-700 mb-1">Meaning</label>
+            <input
+              id="meaningInput"
+              type="text"
+              placeholder="e.g., Able to recover quickly from difficulties"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label for="sentenceInput" class="block text-sm font-medium text-slate-700 mb-1">Sample Statement (1–2 lines)</label>
+            <textarea
+              id="sentenceInput"
+              rows="2"
+              placeholder="e.g., Even after failing twice, she stayed resilient and kept practicing every day."
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+            ></textarea>
+          </div>
+          <button
+            id="manualSaveBtn"
+            type="button"
+            class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold text-sm py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+          >
+            Save Manually
+          </button>
+        </div>
+
+        <p id="formError" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></p>
+        <p id="formSuccess" class="hidden text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"></p>
+      </form>
+    </section>
+
+    <!-- Part 2: Review & Practice Section -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
+      <!-- Mode Switcher Tabs -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 w-full sm:w-auto">
+          <button
+            id="tabOneByOne"
+            type="button"
+            class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-white text-slate-900 shadow-sm"
+          >
+            One by One
+          </button>
+          <button
+            id="tabAllWords"
+            type="button"
+            class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-slate-600 hover:text-slate-900"
+          >
+            All Words (<span id="totalCountTab">2</span>)
+          </button>
+          <button
+            id="tabQuiz"
+            type="button"
+            class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-slate-600 hover:text-slate-900"
+          >
+            Practice Quiz
+          </button>
+        </div>
+
+        <span id="counterBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+          1 of 2
+        </span>
+      </div>
+
+      <!-- View A: One-by-One Viewer -->
+      <div id="oneByOneView" class="space-y-4">
+        <div id="wordCard" class="rounded-xl bg-slate-50 border border-slate-200 p-5 space-y-3 min-h-[180px] flex flex-col justify-center">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">Word</span>
+                <span id="displayPos" class="hidden text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700"></span>
+              </div>
+              <h3 id="displayWord" class="text-2xl font-bold text-slate-900 mt-0.5"></h3>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button
+                id="speakBtn"
+                type="button"
+                class="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-700 transition-colors cursor-pointer"
+              >
+                🔊 Listen
+              </button>
+              <button
+                id="toggleLearnedBtn"
+                type="button"
+                class="text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer"
+              >
+                Mark Learned
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Meaning</span>
+            <p id="displayMeaning" class="text-sm text-slate-700 mt-0.5"></p>
+          </div>
+
+          <div>
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Example</span>
+            <p id="displaySentence" class="text-sm italic text-slate-600 mt-0.5 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <div id="emptyOneByOne" class="hidden rounded-xl bg-slate-50 border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+          No words yet. Add your first vocabulary word above!
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            id="prevBtn"
+            type="button"
+            class="flex-1 py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-slate-700 transition-colors cursor-pointer"
+          >
+            ← Previous
+          </button>
+          <button
+            id="nextBtn"
+            type="button"
+            class="flex-1 py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-slate-700 transition-colors cursor-pointer"
+          >
+            Next →
+          </button>
+        </div>
+      </div>
+
+      <!-- View B: All Words Daily Review List -->
+      <div id="allWordsView" class="hidden space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search words or meanings..."
+            class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div class="flex items-center gap-2">
+            <span id="learnedSummary" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-center whitespace-nowrap">
+              0 / 2 learned
+            </span>
+            <button
+              id="exportBtn"
+              type="button"
+              class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer whitespace-nowrap"
+            >
+              ⬇ Export CSV
+            </button>
+          </div>
+        </div>
+
+        <p id="exportStatus" class="hidden text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2"></p>
+
+        <div id="allWordsList" class="space-y-3 max-h-[460px] overflow-y-auto pr-1"></div>
+
+        <div id="emptyAllWords" class="hidden rounded-xl bg-slate-50 border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+          No matching words found.
+        </div>
+      </div>
+
+      <!-- View C: Practice Quiz Mode -->
+      <div id="quizView" class="hidden space-y-4">
+        <div id="quizNotEnough" class="hidden rounded-xl bg-slate-50 border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+          Add at least 2 words to start the practice quiz!
+        </div>
+
+        <div id="quizActive" class="hidden space-y-4">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
+            <span id="quizProgress">Question 1 of 2</span>
+            <span id="quizScore" class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700">Score: 0 / 0</span>
+          </div>
+
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-5 space-y-1">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">What is the meaning of</span>
+            <h3 id="quizWord" class="text-2xl font-bold text-slate-900"></h3>
+          </div>
+
+          <div id="quizOptions" class="space-y-2.5"></div>
+
+          <div id="quizFeedback" class="hidden rounded-xl p-4 text-sm space-y-1.5 border">
+            <p id="quizFeedbackTitle" class="font-semibold"></p>
+            <p id="quizFeedbackSentence" class="text-xs italic leading-relaxed"></p>
+          </div>
+
+          <button
+            id="quizNextBtn"
+            type="button"
+            class="hidden w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+          >
+            Next Question →
+          </button>
+        </div>
+
+        <div id="quizComplete" class="hidden rounded-xl bg-indigo-50 border border-indigo-200 p-6 text-center space-y-3">
+          <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600">Practice Complete!</p>
+          <h3 id="quizFinalScore" class="text-2xl font-bold text-slate-900"></h3>
+          <p id="quizFinalNote" class="text-sm text-slate-600"></p>
+          <button
+            id="quizRestartBtn"
+            type="button"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 px-5 rounded-xl transition-colors cursor-pointer"
+          >
+            Practice Again
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Optional: If deploying to GitHub Pages for yourself, you can also paste your keys here:
+    const DEFAULT_SUPABASE_URL = "https://opwjnxdlrnrnzpimhlvn.supabase.co";
+    const DEFAULT_SUPABASE_KEY = "sb_publishable_IsGoN0aQLu3E-lSCTsL6zg_LDnnkbEk";
+
+    const STORAGE_KEY = "my_vocab_book_v1";
+    const CLOUD_CFG_KEY = "my_vocab_supabase_cfg_v1";
+
+    const starterWords = [
+      {
+        id: "starter-1",
+        word: "Serendipity",
+        pos: "noun",
+        meaning: "Finding something good or useful by chance without looking for it.",
+        sentence: "Meeting my old friend at the airport was pure serendipity. It turned a boring layover into the best part of my trip.",
+        learned: false
+      },
+      {
+        id: "starter-2",
+        word: "Eloquent",
+        pos: "adjective",
+        meaning: "Fluent, clear, and persuasive in speaking or writing.",
+        sentence: "She gave an eloquent speech about teamwork that inspired everyone in the room.",
+        learned: false
+      }
+    ];
+
+    function loadCloudConfig() {
+      if (DEFAULT_SUPABASE_URL && DEFAULT_SUPABASE_KEY) {
+        return { url: DEFAULT_SUPABASE_URL.replace(/\/+$/, ""), key: DEFAULT_SUPABASE_KEY };
+      }
+      try {
+        const raw = localStorage.getItem(CLOUD_CFG_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.url && parsed.key) {
+            return { url: parsed.url.replace(/\/+$/, ""), key: parsed.key };
+          }
+        }
+      } catch (e) {
+        // Ignore storage errors
+      }
+      return null;
+    }
+
+    function saveCloudConfig(cfg) {
+      try {
+        if (cfg) {
+          localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(cfg));
+        } else {
+          localStorage.removeItem(CLOUD_CFG_KEY);
+        }
+      } catch (e) {
+        // Ignore storage errors
+      }
+    }
+
+    function loadLocalWords() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            return parsed.map((item) => ({ ...item, learned: Boolean(item.learned) }));
+          }
+        }
+      } catch (e) {
+        // Fallback to starter words
+      }
+      return [...starterWords];
+    }
+
+    function saveLocalWords() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+      } catch (e) {
+        // Ignore storage errors
+      }
+    }
+
+    let cloudConfig = loadCloudConfig();
+    let words = loadLocalWords();
+    let currentIndex = 0;
+    let activeView = "oneByOne";
+    let searchQuery = "";
+
+    // Quiz state
+    let quizQueue = [];
+    let quizIndex = 0;
+    let quizScoreCount = 0;
+    let quizAnswered = false;
+    let quizCurrentOptions = [];
+
+    // DOM References
+    const cloudToggleBtn = document.getElementById("cloudToggleBtn");
+    const cloudStatusDot = document.getElementById("cloudStatusDot");
+    const cloudStatusText = document.getElementById("cloudStatusText");
+    const cloudPanel = document.getElementById("cloudPanel");
+    const closeCloudBtn = document.getElementById("closeCloudBtn");
+    const sbUrlInput = document.getElementById("sbUrlInput");
+    const sbKeyInput = document.getElementById("sbKeyInput");
+    const cloudMsg = document.getElementById("cloudMsg");
+    const connectCloudBtn = document.getElementById("connectCloudBtn");
+    const disconnectCloudBtn = document.getElementById("disconnectCloudBtn");
+
+    const vocabForm = document.getElementById("vocabForm");
+    const wordInput = document.getElementById("wordInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const manualFields = document.getElementById("manualFields");
+    const meaningInput = document.getElementById("meaningInput");
+    const sentenceInput = document.getElementById("sentenceInput");
+    const manualSaveBtn = document.getElementById("manualSaveBtn");
+    const formError = document.getElementById("formError");
+    const formSuccess = document.getElementById("formSuccess");
+
+    const tabOneByOne = document.getElementById("tabOneByOne");
+    const tabAllWords = document.getElementById("tabAllWords");
+    const tabQuiz = document.getElementById("tabQuiz");
+    const totalCountTab = document.getElementById("totalCountTab");
+    const counterBadge = document.getElementById("counterBadge");
+
+    const oneByOneView = document.getElementById("oneByOneView");
+    const wordCard = document.getElementById("wordCard");
+    const emptyOneByOne = document.getElementById("emptyOneByOne");
+    const displayWord = document.getElementById("displayWord");
+    const displayPos = document.getElementById("displayPos");
+    const displayMeaning = document.getElementById("displayMeaning");
+    const displaySentence = document.getElementById("displaySentence");
+    const speakBtn = document.getElementById("speakBtn");
+    const toggleLearnedBtn = document.getElementById("toggleLearnedBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const allWordsView = document.getElementById("allWordsView");
+    const searchInput = document.getElementById("searchInput");
+    const learnedSummary = document.getElementById("learnedSummary");
+    const exportBtn = document.getElementById("exportBtn");
+    const exportStatus = document.getElementById("exportStatus");
+    const allWordsList = document.getElementById("allWordsList");
+    const emptyAllWords = document.getElementById("emptyAllWords");
+
+    const quizView = document.getElementById("quizView");
+    const quizNotEnough = document.getElementById("quizNotEnough");
+    const quizActive = document.getElementById("quizActive");
+    const quizComplete = document.getElementById("quizComplete");
+    const quizProgress = document.getElementById("quizProgress");
+    const quizScore = document.getElementById("quizScore");
+    const quizWord = document.getElementById("quizWord");
+    const quizOptions = document.getElementById("quizOptions");
+    const quizFeedback = document.getElementById("quizFeedback");
+    const quizFeedbackTitle = document.getElementById("quizFeedbackTitle");
+    const quizFeedbackSentence = document.getElementById("quizFeedbackSentence");
+    const quizNextBtn = document.getElementById("quizNextBtn");
+    const quizFinalScore = document.getElementById("quizFinalScore");
+    const quizFinalNote = document.getElementById("quizFinalNote");
+    const quizRestartBtn = document.getElementById("quizRestartBtn");
+
+    function updateCloudBadge(connected) {
+      if (connected) {
+        cloudStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        cloudStatusText.textContent = "Supabase Cloud Synced";
+        cloudToggleBtn.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100";
+        disconnectCloudBtn.classList.remove("hidden");
+      } else {
+        cloudStatusDot.className = "w-2 h-2 rounded-full bg-slate-400";
+        cloudStatusText.textContent = "Local Mode • Setup Cloud";
+        cloudToggleBtn.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer bg-white border-slate-200 text-slate-600 hover:bg-slate-100";
+        disconnectCloudBtn.classList.add("hidden");
+      }
+    }
+
+    function showCloudMsg(msg, isError) {
+      cloudMsg.textContent = msg;
+      cloudMsg.className = isError
+        ? "text-xs font-medium rounded-lg px-3 py-2 border bg-rose-50 border-rose-200 text-rose-700"
+        : "text-xs font-medium rounded-lg px-3 py-2 border bg-emerald-50 border-emerald-200 text-emerald-700";
+      cloudMsg.classList.remove("hidden");
+    }
+
+    async function supabaseRequest(cfg, path, options = {}) {
+      const headers = {
+        apikey: cfg.key,
+        Authorization: `Bearer ${cfg.key}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
+      const res = await fetch(`${cfg.url}/rest/v1/${path}`, { ...options, headers });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
+      if (res.status === 204) return null;
+      const text = await res.text();
+      return text ? JSON.parse(text) : null;
+    }
+
+    async function syncFromSupabase(cfg) {
+      const rows = await supabaseRequest(cfg, "vocabulary?select=*&order=created_at.asc");
+      if (Array.isArray(rows)) {
+        words = rows.map((r) => ({
+          id: String(r.id),
+          word: r.word,
+          pos: r.pos || "",
+          meaning: r.meaning,
+          sentence: r.sentence,
+          learned: Boolean(r.learned)
+        }));
+        saveLocalWords();
+        currentIndex = words.length > 0 ? words.length - 1 : 0;
+        renderAll();
+      }
+    }
+
+    async function insertWordToCloud(entry) {
+      if (!cloudConfig) return entry;
+      try {
+        const inserted = await supabaseRequest(cloudConfig, "vocabulary", {
+          method: "POST",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            word: entry.word,
+            pos: entry.pos || "",
+            meaning: entry.meaning,
+            sentence: entry.sentence,
+            learned: Boolean(entry.learned)
+          })
+        });
+        if (Array.isArray(inserted) && inserted[0]) {
+          return { ...entry, id: String(inserted[0].id) };
+        }
+      } catch (e) {
+        showError("Saved locally, but cloud sync failed. Check your Supabase connection.");
+      }
+      return entry;
+    }
+
+    function showError(msg) {
+      formSuccess.classList.add("hidden");
+      formError.textContent = msg;
+      formError.classList.remove("hidden");
+    }
+
+    function showSuccess(msg) {
+      formError.classList.add("hidden");
+      formSuccess.textContent = msg;
+      formSuccess.classList.remove("hidden");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function csvCell(value) {
+      const str = String(value == null ? "" : value).replace(/"/g, '""');
+      return `"${str}"`;
+    }
+
+    function exportWordsToCsv() {
+      if (words.length === 0) {
+        exportStatus.textContent = "Add at least one word before exporting.";
+        exportStatus.classList.remove("hidden");
+        return;
+      }
+
+      const headers = ["Word", "Part of Speech", "Meaning", "Sample Statement", "Learned"];
+      const rows = words.map((w) => [
+        csvCell(w.word),
+        csvCell(w.pos || ""),
+        csvCell(w.meaning),
+        csvCell(w.sentence),
+        csvCell(w.learned ? "Yes" : "No")
+      ].join(","));
+
+      const csvContent = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "my_vocabulary_list.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      exportStatus.textContent = `Exported ${words.length} word(s) to my_vocabulary_list.csv!`;
+      exportStatus.classList.remove("hidden");
+    }
+
+    function speakWord(text) {
+      if (!("speechSynthesis" in window) || !text) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = 0.92;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        // Ignore speech synthesis errors
+      }
+    }
+
+    async function toggleLearnedById(id) {
+      const target = words.find((w) => w.id === id);
+      if (!target) return;
+      const nextVal = !target.learned;
+      words = words.map((w) => (w.id === id ? { ...w, learned: nextVal } : w));
+      saveLocalWords();
+      renderAll();
+
+      if (cloudConfig && /^\d+$/.test(String(id))) {
+        try {
+          await supabaseRequest(cloudConfig, `vocabulary?id=eq.${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            body: JSON.stringify({ learned: nextVal })
+          });
+        } catch (e) {
+          // Keep local update if offline
+        }
+      }
+    }
+
+    async function deleteWordById(id) {
+      words = words.filter((w) => w.id !== id);
+      saveLocalWords();
+      renderAll();
+
+      if (cloudConfig && /^\d+$/.test(String(id))) {
+        try {
+          await supabaseRequest(cloudConfig, `vocabulary?id=eq.${encodeURIComponent(id)}`, {
+            method: "DELETE"
+          });
+        } catch (e) {
+          // Keep local delete if offline
+        }
+      }
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function startQuiz() {
+      if (words.length < 2) {
+        quizQueue = [];
+        return;
+      }
+      quizQueue = shuffleArray(words);
+      quizIndex = 0;
+      quizScoreCount = 0;
+      prepareQuestion();
+    }
+
+    function prepareQuestion() {
+      quizAnswered = false;
+      const current = quizQueue[quizIndex];
+      const distractors = shuffleArray(words.filter((w) => w.id !== current.id)).slice(0, 3);
+      quizCurrentOptions = shuffleArray([current, ...distractors]);
+    }
+
+    function renderQuiz() {
+      if (words.length < 2) {
+        quizNotEnough.classList.remove("hidden");
+        quizActive.classList.add("hidden");
+        quizComplete.classList.add("hidden");
+        return;
+      }
+
+      quizNotEnough.classList.add("hidden");
+
+      if (quizIndex >= quizQueue.length) {
+        quizActive.classList.add("hidden");
+        quizComplete.classList.remove("hidden");
+        quizFinalScore.textContent = `You scored ${quizScoreCount} out of ${quizQueue.length}`;
+        quizFinalNote.textContent =
+          quizScoreCount === quizQueue.length
+            ? "Awesome job! You remembered every single word."
+            : "Nice practice! Review the missed words and try again anytime.";
+        return;
+      }
+
+      quizComplete.classList.add("hidden");
+      quizActive.classList.remove("hidden");
+
+      const current = quizQueue[quizIndex];
+      quizProgress.textContent = `Question ${quizIndex + 1} of ${quizQueue.length}`;
+      quizScore.textContent = `Score: ${quizScoreCount} / ${quizQueue.length}`;
+      quizWord.textContent = current.word;
+
+      quizOptions.innerHTML = quizCurrentOptions
+        .map((opt, idx) => {
+          return `
+            <button
+              type="button"
+              data-option-id="${escapeHtml(opt.id)}"
+              class="w-full text-left rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 px-4 py-3 text-sm text-slate-700 transition-colors cursor-pointer"
+            >
+              <span class="font-semibold text-slate-400 mr-2">${String.fromCharCode(65 + idx)}.</span>${escapeHtml(opt.meaning)}
+            </button>
+          `;
+        })
+        .join("");
+
+      quizFeedback.classList.add("hidden");
+      quizNextBtn.classList.add("hidden");
+    }
+
+    function renderAll() {
+      totalCountTab.textContent = words.length;
+      const learnedCount = words.filter((w) => w.learned).length;
+      learnedSummary.textContent = `${learnedCount} / ${words.length} learned`;
+
+      const activeTabCls = "flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-white text-slate-900 shadow-sm";
+      const idleTabCls = "flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-slate-600 hover:text-slate-900";
+
+      tabOneByOne.className = activeView === "oneByOne" ? activeTabCls : idleTabCls;
+      tabAllWords.className = activeView === "allWords" ? activeTabCls : idleTabCls;
+      tabQuiz.className = activeView === "quiz" ? activeTabCls : idleTabCls;
+
+      oneByOneView.classList.toggle("hidden", activeView !== "oneByOne");
+      allWordsView.classList.toggle("hidden", activeView !== "allWords");
+      quizView.classList.toggle("hidden", activeView !== "quiz");
+      counterBadge.classList.toggle("hidden", activeView !== "oneByOne");
+
+      if (words.length === 0) {
+        wordCard.classList.add("hidden");
+        emptyOneByOne.classList.remove("hidden");
+        counterBadge.textContent = "0 of 0";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+      } else {
+        if (currentIndex >= words.length) currentIndex = words.length - 1;
+        if (currentIndex < 0) currentIndex = 0;
+
+        const entry = words[currentIndex];
+        wordCard.classList.remove("hidden");
+        emptyOneByOne.classList.add("hidden");
+
+        displayWord.textContent = entry.word;
+        if (entry.pos) {
+          displayPos.textContent = entry.pos;
+          displayPos.classList.remove("hidden");
+        } else {
+          displayPos.classList.add("hidden");
+        }
+        displayMeaning.textContent = entry.meaning;
+        displaySentence.textContent = `"${entry.sentence}"`;
+        counterBadge.textContent = `${currentIndex + 1} of ${words.length}`;
+
+        if (entry.learned) {
+          toggleLearnedBtn.textContent = "✓ Learned";
+          toggleLearnedBtn.className = "text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 transition-colors cursor-pointer";
+        } else {
+          toggleLearnedBtn.textContent = "Mark Learned";
+          toggleLearnedBtn.className = "text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-200 text-slate-600 transition-colors cursor-pointer";
+        }
+
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === words.length - 1;
+      }
+
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = words.filter((item) => {
+        if (!q) return true;
+        return (
+          item.word.toLowerCase().includes(q) ||
+          item.meaning.toLowerCase().includes(q) ||
+          item.sentence.toLowerCase().includes(q)
+        );
+      });
+
+      if (filtered.length === 0) {
+        allWordsList.innerHTML = "";
+        emptyAllWords.classList.remove("hidden");
+      } else {
+        emptyAllWords.classList.add("hidden");
+        allWordsList.innerHTML = filtered
+          .map((item, idx) => {
+            const posBadge = item.pos
+              ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">${escapeHtml(item.pos)}</span>`
+              : "";
+            const learnedBtnCls = item.learned
+              ? "text-xs font-semibold px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer"
+              : "text-xs font-medium px-2 py-1 rounded-lg bg-white text-slate-500 border border-slate-200 hover:bg-emerald-50 cursor-pointer";
+            const learnedBtnLabel = item.learned ? "✓ Learned" : "Mark Learned";
+
+            return `
+              <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center flex-wrap gap-2">
+                    <span class="text-xs font-semibold text-slate-400">#${idx + 1}</span>
+                    <h3 class="text-base font-bold text-slate-900">${escapeHtml(item.word)}</h3>
+                    ${posBadge}
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      data-speak-word="${escapeHtml(item.word)}"
+                      class="text-xs font-medium text-slate-600 hover:text-indigo-700 px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-indigo-50 transition-colors cursor-pointer"
+                      aria-label="Listen to ${escapeHtml(item.word)}"
+                    >
+                      🔊
+                    </button>
+                    <button
+                      type="button"
+                      data-toggle-id="${escapeHtml(item.id)}"
+                      class="${learnedBtnCls}"
+                    >
+                      ${learnedBtnLabel}
+                    </button>
+                    <button
+                      type="button"
+                      data-delete-id="${escapeHtml(item.id)}"
+                      class="text-xs font-medium text-slate-400 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <p class="text-sm text-slate-700"><span class="font-semibold text-slate-500 text-xs uppercase tracking-wide mr-1.5">Meaning:</span>${escapeHtml(item.meaning)}</p>
+                <p class="text-sm italic text-slate-600 leading-relaxed"><span class="not-italic font-semibold text-slate-500 text-xs uppercase tracking-wide mr-1.5">Example:</span>"${escapeHtml(item.sentence)}"</p>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (activeView === "quiz") {
+        renderQuiz();
+      }
+    }
+
+    async function fetchWordDetails(rawWord) {
+      const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(rawWord)}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Word not found");
+      }
+      const data = await response.json();
+      const entry = data[0];
+      const meanings = entry.meanings || [];
+
+      let chosenPos = "";
+      let chosenDef = "";
+      let chosenExample = "";
+
+      for (const m of meanings) {
+        for (const d of (m.definitions || [])) {
+          if (d.definition && d.example) {
+            chosenPos = m.partOfSpeech || "";
+            chosenDef = d.definition;
+            chosenExample = d.example;
+            break;
+          }
+        }
+        if (chosenExample) break;
+      }
+
+      if (!chosenDef && meanings.length > 0 && meanings[0].definitions && meanings[0].definitions.length > 0) {
+        chosenPos = meanings[0].partOfSpeech || "";
+        chosenDef = meanings[0].definitions[0].definition;
+        chosenExample = `Try using "${entry.word}" in your own sentence today to remember its meaning.`;
+      }
+
+      if (!chosenDef) {
+        throw new Error("No definition found");
+      }
+
+      return {
+        id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+        word: entry.word || rawWord,
+        pos: chosenPos,
+        meaning: chosenDef,
+        sentence: chosenExample,
+        learned: false
+      };
+    }
+
+    // Cloud panel events
+    cloudToggleBtn.addEventListener("click", () => {
+      if (cloudConfig) {
+        sbUrlInput.value = cloudConfig.url;
+        sbKeyInput.value = cloudConfig.key;
+      }
+      cloudMsg.classList.add("hidden");
+      cloudPanel.classList.toggle("hidden");
+    });
+
+    closeCloudBtn.addEventListener("click", () => {
+      cloudPanel.classList.add("hidden");
+    });
+
+    connectCloudBtn.addEventListener("click", async () => {
+      const url = sbUrlInput.value.trim().replace(/\/+$/, "");
+      const key = sbKeyInput.value.trim();
+
+      if (!url || !key) {
+        showCloudMsg("Please enter both your Supabase Project URL and Anon Key.", true);
+        return;
+      }
+
+      connectCloudBtn.disabled = true;
+      connectCloudBtn.textContent = "Connecting...";
+
+      try {
+        const cfg = { url, key };
+        await syncFromSupabase(cfg);
+        cloudConfig = cfg;
+        saveCloudConfig(cfg);
+        updateCloudBadge(true);
+        showCloudMsg(`Connected! Synced ${words.length} word(s) from Supabase.`, false);
+      } catch (err) {
+        showCloudMsg("Connection failed. Double-check your Project URL, Anon Key, and vocabulary table.", true);
+      } finally {
+        connectCloudBtn.disabled = false;
+        connectCloudBtn.textContent = "Connect & Sync Now";
+      }
+    });
+
+    disconnectCloudBtn.addEventListener("click", () => {
+      cloudConfig = null;
+      saveCloudConfig(null);
+      updateCloudBadge(false);
+      showCloudMsg("Disconnected from Supabase. Switched back to Local Mode.", false);
+    });
+
+    vocabForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      formError.classList.add("hidden");
+      formSuccess.classList.add("hidden");
+
+      const rawWord = wordInput.value.trim();
+      if (!rawWord) {
+        showError("Please enter a vocabulary word first.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Searching...";
+
+      try {
+        const result = await fetchWordDetails(rawWord);
+        const savedEntry = await insertWordToCloud(result);
+        words.push(savedEntry);
+        saveLocalWords();
+        currentIndex = words.length - 1;
+        renderAll();
+
+        manualFields.classList.add("hidden");
+        vocabForm.reset();
+        showSuccess(cloudConfig ? `Found and synced "${savedEntry.word}" to Supabase!` : `Found and saved "${savedEntry.word}"!`);
+        wordInput.focus();
+      } catch (err) {
+        manualFields.classList.remove("hidden");
+        showError(`Could not fetch "${rawWord}" automatically. You can type its meaning and example below.`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Find & Save";
+      }
+    });
+
+    manualSaveBtn.addEventListener("click", async () => {
+      const word = wordInput.value.trim();
+      const meaning = meaningInput.value.trim();
+      const sentence = sentenceInput.value.trim();
+
+      if (!word || !meaning || !sentence) {
+        showError("Please fill in the word, meaning, and sample statement.");
+        return;
+      }
+
+      const newEntry = await insertWordToCloud({
+        id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+        word,
+        pos: "",
+        meaning,
+        sentence,
+        learned: false
+      });
+
+      words.push(newEntry);
+      saveLocalWords();
+      currentIndex = words.length - 1;
+      renderAll();
+
+      manualFields.classList.add("hidden");
+      vocabForm.reset();
+      showSuccess(`"${word}" has been saved!`);
+      wordInput.focus();
+    });
+
+    speakBtn.addEventListener("click", () => {
+      if (words[currentIndex]) {
+        speakWord(words[currentIndex].word);
+      }
+    });
+
+    toggleLearnedBtn.addEventListener("click", () => {
+      if (words[currentIndex]) {
+        toggleLearnedById(words[currentIndex].id);
+      }
+    });
+
+    exportBtn.addEventListener("click", exportWordsToCsv);
+
+    tabOneByOne.addEventListener("click", () => {
+      activeView = "oneByOne";
+      exportStatus.classList.add("hidden");
+      renderAll();
+    });
+
+    tabAllWords.addEventListener("click", () => {
+      activeView = "allWords";
+      exportStatus.classList.add("hidden");
+      renderAll();
+    });
+
+    tabQuiz.addEventListener("click", () => {
+      activeView = "quiz";
+      exportStatus.classList.add("hidden");
+      startQuiz();
+      renderAll();
+    });
+
+    searchInput.addEventListener("input", (event) => {
+      searchQuery = event.target.value;
+      renderAll();
+    });
+
+    allWordsList.addEventListener("click", (event) => {
+      const speakTarget = event.target.closest("[data-speak-word]");
+      if (speakTarget) {
+        speakWord(speakTarget.getAttribute("data-speak-word"));
+        return;
+      }
+
+      const toggleTarget = event.target.closest("[data-toggle-id]");
+      if (toggleTarget) {
+        toggleLearnedById(toggleTarget.getAttribute("data-toggle-id"));
+        return;
+      }
+
+      const deleteTarget = event.target.closest("[data-delete-id]");
+      if (deleteTarget) {
+        deleteWordById(deleteTarget.getAttribute("data-delete-id"));
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (currentIndex > 0) {
+        currentIndex -= 1;
+        renderAll();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentIndex < words.length - 1) {
+        currentIndex += 1;
+        renderAll();
+      }
+    });
+
+    quizOptions.addEventListener("click", (event) => {
+      if (quizAnswered) return;
+      const btn = event.target.closest("[data-option-id]");
+      if (!btn) return;
+
+      quizAnswered = true;
+      const selectedId = btn.getAttribute("data-option-id");
+      const current = quizQueue[quizIndex];
+      const isCorrect = selectedId === current.id;
+
+      if (isCorrect) {
+        quizScoreCount += 1;
+      }
+
+      const allBtns = quizOptions.querySelectorAll("[data-option-id]");
+      allBtns.forEach((b) => {
+        b.disabled = true;
+        b.classList.remove("hover:bg-indigo-50", "hover:border-indigo-300", "cursor-pointer");
+        const id = b.getAttribute("data-option-id");
+        if (id === current.id) {
+          b.className = "w-full text-left rounded-xl border border-emerald-500 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 font-medium";
+        } else if (id === selectedId && !isCorrect) {
+          b.className = "w-full text-left rounded-xl border border-rose-400 bg-rose-50 px-4 py-3 text-sm text-rose-800";
+        } else {
+          b.className = "w-full text-left rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-400";
+        }
+      });
+
+      quizScore.textContent = `Score: ${quizScoreCount} / ${quizQueue.length}`;
+      quizFeedback.className = isCorrect
+        ? "rounded-xl p-4 text-sm space-y-1.5 border bg-emerald-50 border-emerald-200 text-emerald-900"
+        : "rounded-xl p-4 text-sm space-y-1.5 border bg-rose-50 border-rose-200 text-rose-900";
+      quizFeedbackTitle.textContent = isCorrect ? "Correct!" : "Not quite — the correct meaning is highlighted above.";
+      quizFeedbackSentence.textContent = `Example: "${current.sentence}"`;
+      quizFeedback.classList.remove("hidden");
+
+      quizNextBtn.textContent = quizIndex === quizQueue.length - 1 ? "See Final Score →" : "Next Question →";
+      quizNextBtn.classList.remove("hidden");
+    });
+
+    quizNextBtn.addEventListener("click", () => {
+      quizIndex += 1;
+      if (quizIndex < quizQueue.length) {
+        prepareQuestion();
+      }
+      renderQuiz();
+    });
+
+    quizRestartBtn.addEventListener("click", () => {
+      startQuiz();
+      renderQuiz();
+    });
+
+    // Boot: sync from Supabase automatically if already configured
+    (async function init() {
+      if (cloudConfig) {
+        try {
+          await syncFromSupabase(cloudConfig);
+          updateCloudBadge(true);
+        } catch (e) {
+          updateCloudBadge(false);
+        }
+      } else {
+        updateCloudBadge(false);
+      }
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
