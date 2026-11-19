@@ -509,10 +509,12 @@
     async function supabaseRequest(cfg, path, options = {}) {
       const headers = {
         apikey: cfg.key,
-        Authorization: `Bearer ${cfg.key}`,
         "Content-Type": "application/json",
         ...(options.headers || {})
       };
+      if (cfg.key.startsWith("eyJ")) {
+        headers.Authorization = `Bearer ${cfg.key}`;
+      }
       const res = await fetch(`${cfg.url}/rest/v1/${path}`, { ...options, headers });
       if (!res.ok) {
         const errText = await res.text();
@@ -948,7 +950,7 @@
         updateCloudBadge(true);
         showCloudMsg(`Connected! Synced ${words.length} word(s) from Supabase.`, false);
       } catch (err) {
-        showCloudMsg("Connection failed. Double-check your Project URL, Anon Key, and vocabulary table.", true);
+        showCloudMsg(`Connection failed (${err.message}). Check your Project URL, Key, and vocabulary table.`, true);
       } finally {
         connectCloudBtn.disabled = false;
         connectCloudBtn.textContent = "Connect & Sync Now";
