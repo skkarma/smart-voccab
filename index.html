@@ -20,7 +20,7 @@
     <header class="text-center space-y-2">
       <div class="flex items-center justify-center gap-2 flex-wrap">
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">
-          Step 8 • Words &amp; IELTS Idioms
+          Step 9 • English + Hindi Meanings &amp; Examples
         </span>
         <button
           id="cloudToggleBtn"
@@ -32,7 +32,7 @@
         </button>
       </div>
       <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">My Vocabulary &amp; Idioms Book</h1>
-      <p class="text-sm text-slate-500">Save words &amp; IELTS idioms with meanings and examples, sync with Supabase, listen, quiz, and export.</p>
+      <p class="text-sm text-slate-500">Save words &amp; IELTS idioms with English + Hindi meanings and examples, synced with Supabase.</p>
     </header>
 
     <!-- Collapsible Supabase Cloud Sync Settings -->
@@ -137,9 +137,9 @@
 
         <!-- Optional Fallback Manual Fields for Word Mode -->
         <div id="manualFields" class="hidden space-y-3 pt-2 border-t border-slate-100">
-          <p class="text-xs text-slate-500">Enter details manually below if the word wasn't found online:</p>
+          <p class="text-xs text-slate-500">Enter details manually below (Hindi translation will be auto-added if left blank):</p>
           <div>
-            <label for="meaningInput" class="block text-sm font-medium text-slate-700 mb-1">Meaning</label>
+            <label for="meaningInput" class="block text-sm font-medium text-slate-700 mb-1">Meaning (English)</label>
             <input
               id="meaningInput"
               type="text"
@@ -148,7 +148,7 @@
             />
           </div>
           <div>
-            <label for="sentenceInput" class="block text-sm font-medium text-slate-700 mb-1">Sample Statement (1–2 lines)</label>
+            <label for="sentenceInput" class="block text-sm font-medium text-slate-700 mb-1">Sample Statement (1–2 lines, English)</label>
             <textarea
               id="sentenceInput"
               rows="2"
@@ -188,7 +188,7 @@
         </div>
 
         <div>
-          <label for="idiomMeaningInput" class="block text-sm font-medium text-slate-700 mb-1">Meaning</label>
+          <label for="idiomMeaningInput" class="block text-sm font-medium text-slate-700 mb-1">Meaning (English)</label>
           <input
             id="idiomMeaningInput"
             type="text"
@@ -198,13 +198,34 @@
         </div>
 
         <div>
-          <label for="idiomSentenceInput" class="block text-sm font-medium text-slate-700 mb-1">Sample Statement (1–2 lines)</label>
+          <label for="idiomSentenceInput" class="block text-sm font-medium text-slate-700 mb-1">Sample Statement (1–2 lines, English)</label>
           <textarea
             id="idiomSentenceInput"
             rows="2"
             placeholder="e.g., The teacher told a short joke to break the ice on the first day of class."
             class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
           ></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label for="idiomMeaningHiInput" class="block text-xs font-medium text-slate-600 mb-1">Hindi Meaning (optional — auto-translated if blank)</label>
+            <input
+              id="idiomMeaningHiInput"
+              type="text"
+              placeholder="हिंदी में मतलब..."
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+          <div>
+            <label for="idiomSentenceHiInput" class="block text-xs font-medium text-slate-600 mb-1">Hindi Example (optional — auto-translated if blank)</label>
+            <input
+              id="idiomSentenceHiInput"
+              type="text"
+              placeholder="हिंदी में उदाहरण..."
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
         </div>
 
         <button
@@ -255,7 +276,7 @@
 
       <!-- View A: One-by-One Viewer -->
       <div id="oneByOneView" class="space-y-4">
-        <div id="wordCard" class="rounded-xl bg-slate-50 border border-slate-200 p-5 space-y-3 min-h-[180px] flex flex-col justify-center">
+        <div id="wordCard" class="rounded-xl bg-slate-50 border border-slate-200 p-5 space-y-3 min-h-[200px] flex flex-col justify-center">
           <div class="flex items-start justify-between gap-2">
             <div>
               <div class="flex items-center gap-2">
@@ -283,14 +304,16 @@
             </div>
           </div>
 
-          <div>
+          <div class="space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Meaning</span>
-            <p id="displayMeaning" class="text-sm text-slate-700 mt-0.5"></p>
+            <p id="displayMeaning" class="text-sm text-slate-800"></p>
+            <p id="displayMeaningHi" class="hidden text-sm text-indigo-700 font-medium"></p>
           </div>
 
-          <div>
+          <div class="space-y-1">
             <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Example</span>
-            <p id="displaySentence" class="text-sm italic text-slate-600 mt-0.5 leading-relaxed"></p>
+            <p id="displaySentence" class="text-sm italic text-slate-600 leading-relaxed"></p>
+            <p id="displaySentenceHi" class="hidden text-sm text-slate-700 leading-relaxed"></p>
           </div>
         </div>
 
@@ -405,7 +428,7 @@
   </div>
 
   <script>
-    // Optional: If deploying to GitHub Pages for yourself, you can also paste your keys here:
+    // Optional: If deploying to GitHub Pages for yourself, paste your keys here:
     const DEFAULT_SUPABASE_URL = "https://opwjnxdlrnrnzpimhlvn.supabase.co";
     const DEFAULT_SUPABASE_KEY = "sb_publishable_IsGoN0aQLu3E-lSCTsL6zg_LDnnkbEk";
 
@@ -418,7 +441,9 @@
         word: "Serendipity",
         pos: "noun",
         meaning: "Finding something good or useful by chance without looking for it.",
+        meaning_hi: "बिना खोजे संयोग से कोई अच्छी या उपयोगी चीज़ मिल जाना।",
         sentence: "Meeting my old friend at the airport was pure serendipity. It turned a boring layover into the best part of my trip.",
+        sentence_hi: "एयरपोर्ट पर अपने पुराने दोस्त से मिलना महज़ एक सुखद संयोग था। इसने मेरे बोरिंग इंतज़ार को यात्रा के सबसे अच्छे हिस्से में बदल दिया।",
         learned: false
       },
       {
@@ -426,7 +451,9 @@
         word: "Eloquent",
         pos: "adjective",
         meaning: "Fluent, clear, and persuasive in speaking or writing.",
+        meaning_hi: "बोलने या लिखने में स्पष्ट, धाराप्रवाह और प्रभावशाली।",
         sentence: "She gave an eloquent speech about teamwork that inspired everyone in the room.",
+        sentence_hi: "उन्होंने टीमवर्क पर एक प्रभावशाली भाषण दिया जिसने कमरे में मौजूद सभी लोगों को प्रेरित किया।",
         learned: false
       },
       {
@@ -434,7 +461,9 @@
         word: "Bite the bullet",
         pos: "idiom",
         meaning: "To face a difficult or unpleasant situation with courage and determination.",
+        meaning_hi: "हिम्मत और दृढ़ संकल्प के साथ किसी कठिन या अप्रिय परिस्थिति का सामना करना।",
         sentence: "Even though I was nervous about IELTS Speaking, I decided to bite the bullet and book my test date.",
+        sentence_hi: "भले ही मैं IELTS स्पीकिंग को लेकर घबराया हुआ था, मैंने हिम्मत जुटाकर अपनी परीक्षा की तारीख बुक कर दी।",
         learned: false
       }
     ];
@@ -475,7 +504,12 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
-            return parsed.map((item) => ({ ...item, learned: Boolean(item.learned) }));
+            return parsed.map((item) => ({
+              ...item,
+              meaning_hi: item.meaning_hi || "",
+              sentence_hi: item.sentence_hi || "",
+              learned: Boolean(item.learned)
+            }));
           }
         }
       } catch (e) {
@@ -495,9 +529,9 @@
     let cloudConfig = loadCloudConfig();
     let words = loadLocalWords();
     let currentIndex = 0;
-    let entryMode = "word"; // "word" | "idiom"
+    let entryMode = "word";
     let activeView = "oneByOne";
-    let typeFilter = "all"; // "all" | "words" | "idioms"
+    let typeFilter = "all";
     let searchQuery = "";
 
     // Quiz state
@@ -534,6 +568,8 @@
     const autoFindIdiomBtn = document.getElementById("autoFindIdiomBtn");
     const idiomMeaningInput = document.getElementById("idiomMeaningInput");
     const idiomSentenceInput = document.getElementById("idiomSentenceInput");
+    const idiomMeaningHiInput = document.getElementById("idiomMeaningHiInput");
+    const idiomSentenceHiInput = document.getElementById("idiomSentenceHiInput");
     const saveIdiomBtn = document.getElementById("saveIdiomBtn");
 
     const formError = document.getElementById("formError");
@@ -552,7 +588,9 @@
     const displayWord = document.getElementById("displayWord");
     const displayPos = document.getElementById("displayPos");
     const displayMeaning = document.getElementById("displayMeaning");
+    const displayMeaningHi = document.getElementById("displayMeaningHi");
     const displaySentence = document.getElementById("displaySentence");
+    const displaySentenceHi = document.getElementById("displaySentenceHi");
     const speakBtn = document.getElementById("speakBtn");
     const toggleLearnedBtn = document.getElementById("toggleLearnedBtn");
     const prevBtn = document.getElementById("prevBtn");
@@ -607,6 +645,20 @@
       cloudMsg.classList.remove("hidden");
     }
 
+    async function translateToHindi(text) {
+      if (!text || !text.trim()) return "";
+      try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.trim())}&langpair=en|hi`;
+        const res = await fetch(url);
+        if (!res.ok) return "";
+        const data = await res.json();
+        const translated = data && data.responseData && data.responseData.translatedText;
+        return translated ? String(translated).trim() : "";
+      } catch (e) {
+        return "";
+      }
+    }
+
     async function supabaseRequest(cfg, path, options = {}) {
       const headers = {
         apikey: cfg.key,
@@ -634,7 +686,9 @@
           word: r.word,
           pos: r.pos || "",
           meaning: r.meaning,
+          meaning_hi: r.meaning_hi || "",
           sentence: r.sentence,
+          sentence_hi: r.sentence_hi || "",
           learned: Boolean(r.learned)
         }));
         saveLocalWords();
@@ -653,7 +707,9 @@
             word: entry.word,
             pos: entry.pos || "",
             meaning: entry.meaning,
+            meaning_hi: entry.meaning_hi || "",
             sentence: entry.sentence,
+            sentence_hi: entry.sentence_hi || "",
             learned: Boolean(entry.learned)
           })
         });
@@ -661,7 +717,7 @@
           return { ...entry, id: String(inserted[0].id) };
         }
       } catch (e) {
-        showError("Saved locally, but cloud sync failed. Check your Supabase connection.");
+        showError("Saved locally, but Supabase sync failed. Run the ALTER TABLE SQL if you haven't added Hindi columns yet.");
       }
       return entry;
     }
@@ -709,16 +765,26 @@
         return;
       }
 
-      const headers = ["Word / Idiom", "Type / Part of Speech", "Meaning", "Sample Statement", "Learned"];
+      const headers = [
+        "Word / Idiom",
+        "Type / Part of Speech",
+        "Meaning (English)",
+        "Meaning (Hindi)",
+        "Sample Statement (English)",
+        "Sample Statement (Hindi)",
+        "Learned"
+      ];
       const rows = words.map((w) => [
         csvCell(w.word),
         csvCell(w.pos || ""),
         csvCell(w.meaning),
+        csvCell(w.meaning_hi || ""),
         csvCell(w.sentence),
+        csvCell(w.sentence_hi || ""),
         csvCell(w.learned ? "Yes" : "No")
       ].join(","));
 
-      const csvContent = [headers.join(","), ...rows].join("\n");
+      const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
 
@@ -841,6 +907,7 @@
 
       quizOptions.innerHTML = quizCurrentOptions
         .map((opt, idx) => {
+          const hiSub = opt.meaning_hi ? `<span class="block text-xs text-indigo-700 mt-0.5">${escapeHtml(opt.meaning_hi)}</span>` : "";
           return `
             <button
               type="button"
@@ -848,6 +915,7 @@
               class="w-full text-left rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-300 px-4 py-3 text-sm text-slate-700 transition-colors cursor-pointer"
             >
               <span class="font-semibold text-slate-400 mr-2">${String.fromCharCode(65 + idx)}.</span>${escapeHtml(opt.meaning)}
+              ${hiSub}
             </button>
           `;
         })
@@ -885,7 +953,6 @@
       quizView.classList.toggle("hidden", activeView !== "quiz");
       counterBadge.classList.toggle("hidden", activeView !== "oneByOne");
 
-      // Filter pill styles
       const pillActive = "px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white cursor-pointer";
       const pillIdle = "px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer";
       filterAllBtn.className = typeFilter === "all" ? pillActive : pillIdle;
@@ -922,8 +989,23 @@
         } else {
           displayPos.classList.add("hidden");
         }
+
         displayMeaning.textContent = entry.meaning;
+        if (entry.meaning_hi) {
+          displayMeaningHi.textContent = entry.meaning_hi;
+          displayMeaningHi.classList.remove("hidden");
+        } else {
+          displayMeaningHi.classList.add("hidden");
+        }
+
         displaySentence.textContent = `"${entry.sentence}"`;
+        if (entry.sentence_hi) {
+          displaySentenceHi.textContent = entry.sentence_hi;
+          displaySentenceHi.classList.remove("hidden");
+        } else {
+          displaySentenceHi.classList.add("hidden");
+        }
+
         counterBadge.textContent = `${currentIndex + 1} of ${words.length}`;
 
         if (entry.learned) {
@@ -947,7 +1029,9 @@
         return (
           item.word.toLowerCase().includes(q) ||
           item.meaning.toLowerCase().includes(q) ||
-          item.sentence.toLowerCase().includes(q)
+          (item.meaning_hi || "").toLowerCase().includes(q) ||
+          item.sentence.toLowerCase().includes(q) ||
+          (item.sentence_hi || "").toLowerCase().includes(q)
         );
       });
 
@@ -969,6 +1053,13 @@
               ? "text-xs font-semibold px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer"
               : "text-xs font-medium px-2 py-1 rounded-lg bg-white text-slate-500 border border-slate-200 hover:bg-emerald-50 cursor-pointer";
             const learnedBtnLabel = item.learned ? "✓ Learned" : "Mark Learned";
+
+            const meaningHiHtml = item.meaning_hi
+              ? `<p class="text-sm text-indigo-700 font-medium">${escapeHtml(item.meaning_hi)}</p>`
+              : "";
+            const sentenceHiHtml = item.sentence_hi
+              ? `<p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(item.sentence_hi)}</p>`
+              : "";
 
             return `
               <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2">
@@ -1003,8 +1094,14 @@
                     </button>
                   </div>
                 </div>
-                <p class="text-sm text-slate-700"><span class="font-semibold text-slate-500 text-xs uppercase tracking-wide mr-1.5">Meaning:</span>${escapeHtml(item.meaning)}</p>
-                <p class="text-sm italic text-slate-600 leading-relaxed"><span class="not-italic font-semibold text-slate-500 text-xs uppercase tracking-wide mr-1.5">Example:</span>"${escapeHtml(item.sentence)}"</p>
+                <div class="space-y-0.5">
+                  <p class="text-sm text-slate-700"><span class="font-semibold text-slate-500 text-xs uppercase tracking-wide mr-1.5">Meaning:</span>${escapeHtml(item.meaning)}</p>
+                  ${meaningHiHtml}
+                </div>
+                <div class="space-y-0.5">
+                  <p class="text-sm italic text-slate-600 leading-relaxed"><span class="not-italic font-semibold text-slate-500 text-xs uppercase tracking-wide mr-1.5">Example:</span>"${escapeHtml(item.sentence)}"</p>
+                  ${sentenceHiHtml}
+                </div>
               </div>
             `;
           })
@@ -1052,12 +1149,19 @@
         throw new Error("No definition found");
       }
 
+      const [meaningHi, sentenceHi] = await Promise.all([
+        translateToHindi(chosenDef),
+        translateToHindi(chosenExample)
+      ]);
+
       return {
         id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
         word: entry.word || rawWord,
         pos: chosenPos,
         meaning: chosenDef,
+        meaning_hi: meaningHi,
         sentence: chosenExample,
+        sentence_hi: sentenceHi,
         learned: false
       };
     }
@@ -1092,17 +1196,23 @@
         throw new Error("No definition found");
       }
 
+      const finalEx = exText || `Try using "${rawIdiom}" in an IELTS Speaking or daily sentence.`;
+      const [meaningHi, sentenceHi] = await Promise.all([
+        translateToHindi(defText),
+        translateToHindi(finalEx)
+      ]);
+
       return {
         meaning: defText,
-        sentence: exText || `Try using "${rawIdiom}" in an IELTS Speaking or daily sentence.`
+        sentence: finalEx,
+        meaning_hi: meaningHi,
+        sentence_hi: sentenceHi
       };
     }
 
-    // Mode toggle events
     modeWordBtn.addEventListener("click", () => setEntryMode("word"));
     modeIdiomBtn.addEventListener("click", () => setEntryMode("idiom"));
 
-    // Cloud panel events
     cloudToggleBtn.addEventListener("click", () => {
       if (cloudConfig) {
         sbUrlInput.value = cloudConfig.url;
@@ -1173,7 +1283,7 @@
 
         manualFields.classList.add("hidden");
         vocabForm.reset();
-        showSuccess(cloudConfig ? `Found and synced "${savedEntry.word}" to Supabase!` : `Found and saved "${savedEntry.word}"!`);
+        showSuccess(cloudConfig ? `Found & synced "${savedEntry.word}" (with Hindi) to Supabase!` : `Found & saved "${savedEntry.word}" with Hindi!`);
         wordInput.focus();
       } catch (err) {
         manualFields.classList.remove("hidden");
@@ -1194,27 +1304,41 @@
         return;
       }
 
-      const newEntry = await insertWordToCloud({
-        id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
-        word,
-        pos: "",
-        meaning,
-        sentence,
-        learned: false
-      });
+      manualSaveBtn.disabled = true;
+      manualSaveBtn.textContent = "Translating & Saving...";
 
-      words.push(newEntry);
-      saveLocalWords();
-      currentIndex = words.length - 1;
-      renderAll();
+      try {
+        const [meaningHi, sentenceHi] = await Promise.all([
+          translateToHindi(meaning),
+          translateToHindi(sentence)
+        ]);
 
-      manualFields.classList.add("hidden");
-      vocabForm.reset();
-      showSuccess(`"${word}" has been saved!`);
-      wordInput.focus();
+        const newEntry = await insertWordToCloud({
+          id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+          word,
+          pos: "",
+          meaning,
+          meaning_hi: meaningHi,
+          sentence,
+          sentence_hi: sentenceHi,
+          learned: false
+        });
+
+        words.push(newEntry);
+        saveLocalWords();
+        currentIndex = words.length - 1;
+        renderAll();
+
+        manualFields.classList.add("hidden");
+        vocabForm.reset();
+        showSuccess(`"${word}" has been saved!`);
+        wordInput.focus();
+      } finally {
+        manualSaveBtn.disabled = false;
+        manualSaveBtn.textContent = "Save Manually";
+      }
     });
 
-    // Idiom Auto-Find & Save
     autoFindIdiomBtn.addEventListener("click", async () => {
       clearFormAlerts();
       const rawIdiom = idiomInput.value.trim();
@@ -1230,9 +1354,11 @@
         const details = await fetchIdiomDetails(rawIdiom);
         idiomMeaningInput.value = details.meaning;
         idiomSentenceInput.value = details.sentence;
-        showSuccess(`Found meaning for "${rawIdiom}"! Review or edit it, then click Save Idiom.`);
+        idiomMeaningHiInput.value = details.meaning_hi;
+        idiomSentenceHiInput.value = details.sentence_hi;
+        showSuccess(`Found English + Hindi details for "${rawIdiom}"! Review or edit, then click Save Idiom.`);
       } catch (err) {
-        showError(`Could not auto-find "${rawIdiom}" online. You can type its meaning and sample sentence below.`);
+        showError(`Could not auto-find "${rawIdiom}" online. Type the English meaning & example below—Hindi will be auto-translated on save.`);
       } finally {
         autoFindIdiomBtn.disabled = false;
         autoFindIdiomBtn.textContent = "Auto-Find Meaning";
@@ -1246,6 +1372,8 @@
       const idiom = idiomInput.value.trim();
       const meaning = idiomMeaningInput.value.trim();
       const sentence = idiomSentenceInput.value.trim();
+      let meaningHi = idiomMeaningHiInput.value.trim();
+      let sentenceHi = idiomSentenceHiInput.value.trim();
 
       if (!idiom || !meaning || !sentence) {
         showError("Please fill in the idiom, meaning, and a 1–2 line sample statement.");
@@ -1256,12 +1384,23 @@
       saveIdiomBtn.textContent = "Saving...";
 
       try {
+        if (!meaningHi || !sentenceHi) {
+          const [trM, trS] = await Promise.all([
+            meaningHi ? Promise.resolve(meaningHi) : translateToHindi(meaning),
+            sentenceHi ? Promise.resolve(sentenceHi) : translateToHindi(sentence)
+          ]);
+          meaningHi = trM;
+          sentenceHi = trS;
+        }
+
         const newEntry = await insertWordToCloud({
           id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
           word: idiom,
           pos: "idiom",
           meaning,
+          meaning_hi: meaningHi,
           sentence,
+          sentence_hi: sentenceHi,
           learned: false
         });
 
@@ -1271,7 +1410,7 @@
         renderAll();
 
         idiomForm.reset();
-        showSuccess(cloudConfig ? `Idiom "${idiom}" saved and synced to Supabase!` : `Idiom "${idiom}" saved!`);
+        showSuccess(cloudConfig ? `Idiom "${idiom}" saved (with Hindi) to Supabase!` : `Idiom "${idiom}" saved with Hindi!`);
         idiomInput.focus();
       } finally {
         saveIdiomBtn.disabled = false;
@@ -1398,7 +1537,9 @@
         ? "rounded-xl p-4 text-sm space-y-1.5 border bg-emerald-50 border-emerald-200 text-emerald-900"
         : "rounded-xl p-4 text-sm space-y-1.5 border bg-rose-50 border-rose-200 text-rose-900";
       quizFeedbackTitle.textContent = isCorrect ? "Correct!" : "Not quite — the correct meaning is highlighted above.";
-      quizFeedbackSentence.textContent = `Example: "${current.sentence}"`;
+      quizFeedbackSentence.textContent = current.sentence_hi
+        ? `Example: "${current.sentence}" (${current.sentence_hi})`
+        : `Example: "${current.sentence}"`;
       quizFeedback.classList.remove("hidden");
 
       quizNextBtn.textContent = quizIndex === quizQueue.length - 1 ? "See Final Score →" : "Next Question →";
@@ -1418,7 +1559,6 @@
       renderQuiz();
     });
 
-    // Boot: sync from Supabase automatically if already configured
     (async function init() {
       if (cloudConfig) {
         try {
