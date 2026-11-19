@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Vocabulary App — Cloud Sync</title>
+  <title>My Vocabulary &amp; Idioms App</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,7 +20,7 @@
     <header class="text-center space-y-2">
       <div class="flex items-center justify-center gap-2 flex-wrap">
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">
-          Step 7 • Supabase Cloud Sync
+          Step 8 • Words &amp; IELTS Idioms
         </span>
         <button
           id="cloudToggleBtn"
@@ -31,8 +31,8 @@
           <span id="cloudStatusText">Local Mode • Setup Cloud</span>
         </button>
       </div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">My Vocabulary Book</h1>
-      <p class="text-sm text-slate-500">Add words automatically, sync across devices with Supabase, listen, quiz, and export.</p>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">My Vocabulary &amp; Idioms Book</h1>
+      <p class="text-sm text-slate-500">Save words &amp; IELTS idioms with meanings and examples, sync with Supabase, listen, quiz, and export.</p>
     </header>
 
     <!-- Collapsible Supabase Cloud Sync Settings -->
@@ -40,7 +40,7 @@
       <div class="flex items-start justify-between gap-2">
         <div>
           <h2 class="text-base font-semibold text-slate-900">Connect Supabase Database</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Paste your Project URL and Anon Key to sync words across all your phones and laptops.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Paste your Project URL and Anon/Publishable Key to sync across all your devices.</p>
         </div>
         <button
           id="closeCloudBtn"
@@ -66,7 +66,7 @@
           <input
             id="sbKeyInput"
             type="password"
-            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            placeholder="sb_publishable_... or eyJ..."
             class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
@@ -92,9 +92,29 @@
       </div>
     </section>
 
-    <!-- Part 1: Auto-Fetch & Add New Word Form -->
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-      <h2 class="text-base font-semibold text-slate-900 mb-4">Add a New Word</h2>
+    <!-- Part 1: Add Word or Idiom Form -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <h2 class="text-base font-semibold text-slate-900">Add New Entry</h2>
+        <div class="inline-flex rounded-xl bg-slate-100 p-1">
+          <button
+            id="modeWordBtn"
+            type="button"
+            class="px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-white text-slate-900 shadow-sm"
+          >
+            Word
+          </button>
+          <button
+            id="modeIdiomBtn"
+            type="button"
+            class="px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-slate-600 hover:text-slate-900"
+          >
+            Idiom
+          </button>
+        </div>
+      </div>
+
+      <!-- Word Mode Form -->
       <form id="vocabForm" class="space-y-4" novalidate>
         <div>
           <label for="wordInput" class="block text-sm font-medium text-slate-700 mb-1">Vocabulary Word</label>
@@ -115,7 +135,7 @@
           </div>
         </div>
 
-        <!-- Optional Fallback Manual Fields -->
+        <!-- Optional Fallback Manual Fields for Word Mode -->
         <div id="manualFields" class="hidden space-y-3 pt-2 border-t border-slate-100">
           <p class="text-xs text-slate-500">Enter details manually below if the word wasn't found online:</p>
           <div>
@@ -144,10 +164,60 @@
             Save Manually
           </button>
         </div>
-
-        <p id="formError" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></p>
-        <p id="formSuccess" class="hidden text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"></p>
       </form>
+
+      <!-- Idiom Mode Form -->
+      <form id="idiomForm" class="hidden space-y-3" novalidate>
+        <div>
+          <label for="idiomInput" class="block text-sm font-medium text-slate-700 mb-1">Idiom / Phrase</label>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input
+              id="idiomInput"
+              type="text"
+              placeholder="e.g., Break the ice, Bite the bullet"
+              class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+            <button
+              id="autoFindIdiomBtn"
+              type="button"
+              class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-semibold text-xs py-2.5 px-4 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
+            >
+              Auto-Find Meaning
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="idiomMeaningInput" class="block text-sm font-medium text-slate-700 mb-1">Meaning</label>
+          <input
+            id="idiomMeaningInput"
+            type="text"
+            placeholder="e.g., To do or say something to make people feel more comfortable"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          />
+        </div>
+
+        <div>
+          <label for="idiomSentenceInput" class="block text-sm font-medium text-slate-700 mb-1">Sample Statement (1–2 lines)</label>
+          <textarea
+            id="idiomSentenceInput"
+            rows="2"
+            placeholder="e.g., The teacher told a short joke to break the ice on the first day of class."
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
+          ></textarea>
+        </div>
+
+        <button
+          id="saveIdiomBtn"
+          type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+        >
+          Save Idiom
+        </button>
+      </form>
+
+      <p id="formError" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></p>
+      <p id="formSuccess" class="hidden text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"></p>
     </section>
 
     <!-- Part 2: Review & Practice Section -->
@@ -167,7 +237,7 @@
             type="button"
             class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-slate-600 hover:text-slate-900"
           >
-            All Words (<span id="totalCountTab">2</span>)
+            All (<span id="totalCountTab">3</span>)
           </button>
           <button
             id="tabQuiz"
@@ -179,7 +249,7 @@
         </div>
 
         <span id="counterBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
-          1 of 2
+          1 of 3
         </span>
       </div>
 
@@ -189,8 +259,8 @@
           <div class="flex items-start justify-between gap-2">
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">Word</span>
-                <span id="displayPos" class="hidden text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700"></span>
+                <span id="displayEntryLabel" class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600">Word</span>
+                <span id="displayPos" class="hidden text-[11px] font-medium px-2 py-0.5 rounded-full"></span>
               </div>
               <h3 id="displayWord" class="text-2xl font-bold text-slate-900 mt-0.5"></h3>
             </div>
@@ -225,7 +295,7 @@
         </div>
 
         <div id="emptyOneByOne" class="hidden rounded-xl bg-slate-50 border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-          No words yet. Add your first vocabulary word above!
+          No entries yet. Add your first word or idiom above!
         </div>
 
         <div class="flex items-center gap-3">
@@ -246,18 +316,18 @@
         </div>
       </div>
 
-      <!-- View B: All Words Daily Review List -->
+      <!-- View B: All Words & Idioms Daily Review List -->
       <div id="allWordsView" class="hidden space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center gap-2">
           <input
             id="searchInput"
             type="text"
-            placeholder="Search words or meanings..."
+            placeholder="Search words, idioms, or meanings..."
             class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
           <div class="flex items-center gap-2">
             <span id="learnedSummary" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-center whitespace-nowrap">
-              0 / 2 learned
+              0 / 3 learned
             </span>
             <button
               id="exportBtn"
@@ -269,24 +339,31 @@
           </div>
         </div>
 
+        <!-- Type Filter Pills -->
+        <div class="flex items-center gap-1.5">
+          <button id="filterAllBtn" type="button" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white cursor-pointer">All</button>
+          <button id="filterWordsBtn" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">Words</button>
+          <button id="filterIdiomsBtn" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">Idioms</button>
+        </div>
+
         <p id="exportStatus" class="hidden text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2"></p>
 
         <div id="allWordsList" class="space-y-3 max-h-[460px] overflow-y-auto pr-1"></div>
 
         <div id="emptyAllWords" class="hidden rounded-xl bg-slate-50 border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-          No matching words found.
+          No matching entries found.
         </div>
       </div>
 
       <!-- View C: Practice Quiz Mode -->
       <div id="quizView" class="hidden space-y-4">
         <div id="quizNotEnough" class="hidden rounded-xl bg-slate-50 border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-          Add at least 2 words to start the practice quiz!
+          Add at least 2 entries to start the practice quiz!
         </div>
 
         <div id="quizActive" class="hidden space-y-4">
           <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
-            <span id="quizProgress">Question 1 of 2</span>
+            <span id="quizProgress">Question 1 of 3</span>
             <span id="quizScore" class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700">Score: 0 / 0</span>
           </div>
 
@@ -351,6 +428,14 @@
         meaning: "Fluent, clear, and persuasive in speaking or writing.",
         sentence: "She gave an eloquent speech about teamwork that inspired everyone in the room.",
         learned: false
+      },
+      {
+        id: "starter-3",
+        word: "Bite the bullet",
+        pos: "idiom",
+        meaning: "To face a difficult or unpleasant situation with courage and determination.",
+        sentence: "Even though I was nervous about IELTS Speaking, I decided to bite the bullet and book my test date.",
+        learned: false
       }
     ];
 
@@ -410,7 +495,9 @@
     let cloudConfig = loadCloudConfig();
     let words = loadLocalWords();
     let currentIndex = 0;
+    let entryMode = "word"; // "word" | "idiom"
     let activeView = "oneByOne";
+    let typeFilter = "all"; // "all" | "words" | "idioms"
     let searchQuery = "";
 
     // Quiz state
@@ -432,6 +519,8 @@
     const connectCloudBtn = document.getElementById("connectCloudBtn");
     const disconnectCloudBtn = document.getElementById("disconnectCloudBtn");
 
+    const modeWordBtn = document.getElementById("modeWordBtn");
+    const modeIdiomBtn = document.getElementById("modeIdiomBtn");
     const vocabForm = document.getElementById("vocabForm");
     const wordInput = document.getElementById("wordInput");
     const submitBtn = document.getElementById("submitBtn");
@@ -439,6 +528,14 @@
     const meaningInput = document.getElementById("meaningInput");
     const sentenceInput = document.getElementById("sentenceInput");
     const manualSaveBtn = document.getElementById("manualSaveBtn");
+
+    const idiomForm = document.getElementById("idiomForm");
+    const idiomInput = document.getElementById("idiomInput");
+    const autoFindIdiomBtn = document.getElementById("autoFindIdiomBtn");
+    const idiomMeaningInput = document.getElementById("idiomMeaningInput");
+    const idiomSentenceInput = document.getElementById("idiomSentenceInput");
+    const saveIdiomBtn = document.getElementById("saveIdiomBtn");
+
     const formError = document.getElementById("formError");
     const formSuccess = document.getElementById("formSuccess");
 
@@ -451,6 +548,7 @@
     const oneByOneView = document.getElementById("oneByOneView");
     const wordCard = document.getElementById("wordCard");
     const emptyOneByOne = document.getElementById("emptyOneByOne");
+    const displayEntryLabel = document.getElementById("displayEntryLabel");
     const displayWord = document.getElementById("displayWord");
     const displayPos = document.getElementById("displayPos");
     const displayMeaning = document.getElementById("displayMeaning");
@@ -464,6 +562,9 @@
     const searchInput = document.getElementById("searchInput");
     const learnedSummary = document.getElementById("learnedSummary");
     const exportBtn = document.getElementById("exportBtn");
+    const filterAllBtn = document.getElementById("filterAllBtn");
+    const filterWordsBtn = document.getElementById("filterWordsBtn");
+    const filterIdiomsBtn = document.getElementById("filterIdiomsBtn");
     const exportStatus = document.getElementById("exportStatus");
     const allWordsList = document.getElementById("allWordsList");
     const emptyAllWords = document.getElementById("emptyAllWords");
@@ -577,12 +678,23 @@
       formSuccess.classList.remove("hidden");
     }
 
+    function clearFormAlerts() {
+      formError.classList.add("hidden");
+      formSuccess.classList.add("hidden");
+    }
+
     function escapeHtml(str) {
       return String(str)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html || "";
+      return (tmp.textContent || tmp.innerText || "").trim();
     }
 
     function csvCell(value) {
@@ -592,12 +704,12 @@
 
     function exportWordsToCsv() {
       if (words.length === 0) {
-        exportStatus.textContent = "Add at least one word before exporting.";
+        exportStatus.textContent = "Add at least one entry before exporting.";
         exportStatus.classList.remove("hidden");
         return;
       }
 
-      const headers = ["Word", "Part of Speech", "Meaning", "Sample Statement", "Learned"];
+      const headers = ["Word / Idiom", "Type / Part of Speech", "Meaning", "Sample Statement", "Learned"];
       const rows = words.map((w) => [
         csvCell(w.word),
         csvCell(w.pos || ""),
@@ -618,7 +730,7 @@
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      exportStatus.textContent = `Exported ${words.length} word(s) to my_vocabulary_list.csv!`;
+      exportStatus.textContent = `Exported ${words.length} entry/entries to my_vocabulary_list.csv!`;
       exportStatus.classList.remove("hidden");
     }
 
@@ -714,8 +826,8 @@
         quizFinalScore.textContent = `You scored ${quizScoreCount} out of ${quizQueue.length}`;
         quizFinalNote.textContent =
           quizScoreCount === quizQueue.length
-            ? "Awesome job! You remembered every single word."
-            : "Nice practice! Review the missed words and try again anytime.";
+            ? "Awesome job! You remembered every single word & idiom."
+            : "Nice practice! Review the missed ones and try again anytime.";
         return;
       }
 
@@ -745,6 +857,17 @@
       quizNextBtn.classList.add("hidden");
     }
 
+    function setEntryMode(mode) {
+      entryMode = mode;
+      clearFormAlerts();
+      const activeCls = "px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-white text-slate-900 shadow-sm";
+      const idleCls = "px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-slate-600 hover:text-slate-900";
+      modeWordBtn.className = mode === "word" ? activeCls : idleCls;
+      modeIdiomBtn.className = mode === "idiom" ? activeCls : idleCls;
+      vocabForm.classList.toggle("hidden", mode !== "word");
+      idiomForm.classList.toggle("hidden", mode !== "idiom");
+    }
+
     function renderAll() {
       totalCountTab.textContent = words.length;
       const learnedCount = words.filter((w) => w.learned).length;
@@ -762,6 +885,13 @@
       quizView.classList.toggle("hidden", activeView !== "quiz");
       counterBadge.classList.toggle("hidden", activeView !== "oneByOne");
 
+      // Filter pill styles
+      const pillActive = "px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white cursor-pointer";
+      const pillIdle = "px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer";
+      filterAllBtn.className = typeFilter === "all" ? pillActive : pillIdle;
+      filterWordsBtn.className = typeFilter === "words" ? pillActive : pillIdle;
+      filterIdiomsBtn.className = typeFilter === "idioms" ? pillActive : pillIdle;
+
       if (words.length === 0) {
         wordCard.classList.add("hidden");
         emptyOneByOne.classList.remove("hidden");
@@ -773,12 +903,21 @@
         if (currentIndex < 0) currentIndex = 0;
 
         const entry = words[currentIndex];
+        const isIdiom = (entry.pos || "").toLowerCase() === "idiom";
         wordCard.classList.remove("hidden");
         emptyOneByOne.classList.add("hidden");
+
+        displayEntryLabel.textContent = isIdiom ? "Idiom" : "Word";
+        displayEntryLabel.className = isIdiom
+          ? "text-[11px] font-semibold uppercase tracking-wider text-amber-700"
+          : "text-[11px] font-semibold uppercase tracking-wider text-indigo-600";
 
         displayWord.textContent = entry.word;
         if (entry.pos) {
           displayPos.textContent = entry.pos;
+          displayPos.className = isIdiom
+            ? "text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800"
+            : "text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700";
           displayPos.classList.remove("hidden");
         } else {
           displayPos.classList.add("hidden");
@@ -801,6 +940,9 @@
 
       const q = searchQuery.trim().toLowerCase();
       const filtered = words.filter((item) => {
+        const isIdiom = (item.pos || "").toLowerCase() === "idiom";
+        if (typeFilter === "words" && isIdiom) return false;
+        if (typeFilter === "idioms" && !isIdiom) return false;
         if (!q) return true;
         return (
           item.word.toLowerCase().includes(q) ||
@@ -816,8 +958,12 @@
         emptyAllWords.classList.add("hidden");
         allWordsList.innerHTML = filtered
           .map((item, idx) => {
+            const isIdiom = (item.pos || "").toLowerCase() === "idiom";
+            const badgeCls = isIdiom
+              ? "bg-amber-100 text-amber-800"
+              : "bg-indigo-100 text-indigo-700";
             const posBadge = item.pos
-              ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">${escapeHtml(item.pos)}</span>`
+              ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${badgeCls}">${escapeHtml(item.pos)}</span>`
               : "";
             const learnedBtnCls = item.learned
               ? "text-xs font-semibold px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer"
@@ -916,6 +1062,46 @@
       };
     }
 
+    async function fetchIdiomDetails(rawIdiom) {
+      const slug = rawIdiom.trim().toLowerCase().replace(/\s+/g, "_");
+      const url = `https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(slug)}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Idiom not found");
+      }
+      const data = await response.json();
+      const enEntries = data.en || [];
+      let defText = "";
+      let exText = "";
+
+      for (const section of enEntries) {
+        for (const d of (section.definitions || [])) {
+          const cleanDef = stripHtml(d.definition);
+          if (cleanDef) {
+            defText = cleanDef;
+            if (Array.isArray(d.examples) && d.examples.length > 0) {
+              exText = stripHtml(d.examples[0]);
+            }
+            break;
+          }
+        }
+        if (defText) break;
+      }
+
+      if (!defText) {
+        throw new Error("No definition found");
+      }
+
+      return {
+        meaning: defText,
+        sentence: exText || `Try using "${rawIdiom}" in an IELTS Speaking or daily sentence.`
+      };
+    }
+
+    // Mode toggle events
+    modeWordBtn.addEventListener("click", () => setEntryMode("word"));
+    modeIdiomBtn.addEventListener("click", () => setEntryMode("idiom"));
+
     // Cloud panel events
     cloudToggleBtn.addEventListener("click", () => {
       if (cloudConfig) {
@@ -935,7 +1121,7 @@
       const key = sbKeyInput.value.trim();
 
       if (!url || !key) {
-        showCloudMsg("Please enter both your Supabase Project URL and Anon Key.", true);
+        showCloudMsg("Please enter both your Supabase Project URL and Anon/Publishable Key.", true);
         return;
       }
 
@@ -948,7 +1134,7 @@
         cloudConfig = cfg;
         saveCloudConfig(cfg);
         updateCloudBadge(true);
-        showCloudMsg(`Connected! Synced ${words.length} word(s) from Supabase.`, false);
+        showCloudMsg(`Connected! Synced ${words.length} entry/entries from Supabase.`, false);
       } catch (err) {
         showCloudMsg(`Connection failed (${err.message}). Check your Project URL, Key, and vocabulary table.`, true);
       } finally {
@@ -966,8 +1152,7 @@
 
     vocabForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      formError.classList.add("hidden");
-      formSuccess.classList.add("hidden");
+      clearFormAlerts();
 
       const rawWord = wordInput.value.trim();
       if (!rawWord) {
@@ -1029,6 +1214,71 @@
       wordInput.focus();
     });
 
+    // Idiom Auto-Find & Save
+    autoFindIdiomBtn.addEventListener("click", async () => {
+      clearFormAlerts();
+      const rawIdiom = idiomInput.value.trim();
+      if (!rawIdiom) {
+        showError("Please type an idiom first, then click Auto-Find Meaning.");
+        return;
+      }
+
+      autoFindIdiomBtn.disabled = true;
+      autoFindIdiomBtn.textContent = "Searching...";
+
+      try {
+        const details = await fetchIdiomDetails(rawIdiom);
+        idiomMeaningInput.value = details.meaning;
+        idiomSentenceInput.value = details.sentence;
+        showSuccess(`Found meaning for "${rawIdiom}"! Review or edit it, then click Save Idiom.`);
+      } catch (err) {
+        showError(`Could not auto-find "${rawIdiom}" online. You can type its meaning and sample sentence below.`);
+      } finally {
+        autoFindIdiomBtn.disabled = false;
+        autoFindIdiomBtn.textContent = "Auto-Find Meaning";
+      }
+    });
+
+    idiomForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearFormAlerts();
+
+      const idiom = idiomInput.value.trim();
+      const meaning = idiomMeaningInput.value.trim();
+      const sentence = idiomSentenceInput.value.trim();
+
+      if (!idiom || !meaning || !sentence) {
+        showError("Please fill in the idiom, meaning, and a 1–2 line sample statement.");
+        return;
+      }
+
+      saveIdiomBtn.disabled = true;
+      saveIdiomBtn.textContent = "Saving...";
+
+      try {
+        const newEntry = await insertWordToCloud({
+          id: "w-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+          word: idiom,
+          pos: "idiom",
+          meaning,
+          sentence,
+          learned: false
+        });
+
+        words.push(newEntry);
+        saveLocalWords();
+        currentIndex = words.length - 1;
+        renderAll();
+
+        idiomForm.reset();
+        showSuccess(cloudConfig ? `Idiom "${idiom}" saved and synced to Supabase!` : `Idiom "${idiom}" saved!`);
+        idiomInput.focus();
+      } finally {
+        saveIdiomBtn.disabled = false;
+        saveIdiomBtn.textContent = "Save Idiom";
+      }
+    });
+
     speakBtn.addEventListener("click", () => {
       if (words[currentIndex]) {
         speakWord(words[currentIndex].word);
@@ -1042,6 +1292,21 @@
     });
 
     exportBtn.addEventListener("click", exportWordsToCsv);
+
+    filterAllBtn.addEventListener("click", () => {
+      typeFilter = "all";
+      renderAll();
+    });
+
+    filterWordsBtn.addEventListener("click", () => {
+      typeFilter = "words";
+      renderAll();
+    });
+
+    filterIdiomsBtn.addEventListener("click", () => {
+      typeFilter = "idioms";
+      renderAll();
+    });
 
     tabOneByOne.addEventListener("click", () => {
       activeView = "oneByOne";
